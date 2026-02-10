@@ -1,176 +1,333 @@
-# Instagram Reel Extractor and Analysis Tool
+# Instagram Reel Extractor v2 🎬
 
-A comprehensive Python tool for downloading Instagram Reels, extracting metadata, analyzing video content, and providing AI-powered insights.
+A comprehensive, AI-powered tool for extracting and analyzing Instagram Reels. Now with **recipe extraction**, **multi-provider AI support**, and **batch processing**.
+
+## ✨ What's New in v2
+
+### 🔥 Major Features
+- **Recipe Extraction**: Automatically detect and extract cooking recipes from reels
+- **Multi-Provider AI**: Support for OpenAI, Anthropic Claude, Google Gemini, Ollama, LM Studio
+- **Batch Processing**: Process multiple reels efficiently
+- **Smart Caching**: Redis/disk caching to avoid re-processing
+- **Enhanced Video Analysis**: Scene detection, OCR, face detection
+
+### 🎯 Specialized for Recipes
+When a cooking video is detected, the tool extracts:
+- Complete ingredient list with quantities
+- Step-by-step cooking instructions
+- Cooking times (prep, cook, total)
+- Cuisine type and dietary tags
+- Chef tips and variations
+- Structured output (JSON, Markdown, JSON-LD)
 
 ## Features
 
-- **Download Instagram Reels**: Fast and reliable reel downloading using yt-dlp
-- **Extract Metadata**: Caption, hashtags, likes, comments, author info, audio info
-- **Video Analysis**: 
-  - Extract keyframes from videos
-  - Transcribe audio if speech is present
-  - Analyze visual content (objects, scenes, actions)
-- **AI Content Understanding**: GPT-4 Vision API for comprehensive content analysis
-- **Structured Output**: JSON format with all extracted data
+### Core Capabilities
+- ✅ **Download Instagram Reels**: Fast downloading via yt-dlp
+- ✅ **Extract Metadata**: Caption, hashtags, likes, author info
+- ✅ **Video Analysis**: Scene detection, keyframe extraction
+- ✅ **Audio Transcription**: Speech-to-text with Whisper
+- ✅ **Multi-Provider AI**: OpenAI, Anthropic, Gemini, Local models
+- ✅ **Recipe Detection**: AI-powered cooking content identification
+- ✅ **Recipe Extraction**: Structured recipe data from videos
+- ✅ **Batch Processing**: Process multiple URLs efficiently
+- ✅ **Smart Caching**: Avoid re-processing same content
+- ✅ **Multiple Output Formats**: JSON, Markdown, JSON-LD
 
-## Prerequisites
-
-- Python 3.8+
-- ffmpeg (system dependency)
-- OpenAI API key
-
-### Installing ffmpeg
-
-**Ubuntu/Debian:**
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
-
-**macOS:**
-```bash
-brew install ffmpeg
-```
-
-**Windows:**
-Download from https://ffmpeg.org/download.html
+### AI Providers Supported
+| Provider | Models | Best For |
+|----------|--------|----------|
+| **OpenAI** | GPT-4o, GPT-4o-mini | General purpose, vision |
+| **Anthropic** | Claude 3 Sonnet/Opus | Complex reasoning |
+| **Google** | Gemini Pro Vision | Cost-effective |
+| **Ollama** | Local models | Privacy, no API costs |
+| **LM Studio** | Local models | Custom local models |
 
 ## Installation
 
-1. Clone the repository:
+### Prerequisites
+- Python 3.8+
+- ffmpeg (system dependency)
+- (Optional) Redis for caching
+
 ```bash
-git clone https://github.com/yourusername/instagram-reel-extractor.git
+# Install ffmpeg
+# Ubuntu/Debian:
+sudo apt update && sudo apt install ffmpeg
+
+# macOS:
+brew install ffmpeg
+```
+
+### Install Package
+
+```bash
+# Clone repository
+git clone https://github.com/vixomaix/instagram-reel-extractor.git
 cd instagram-reel-extractor
-```
 
-2. Create a virtual environment:
-```bash
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-3. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. Set up your OpenAI API key:
-```bash
-export OPENAI_API_KEY="your-api-key-here"
-```
-
-Or create a `.env` file:
-```
-OPENAI_API_KEY=your-api-key-here
+# Set up environment variables
+cp .env.example .env
+# Edit .env and add your API keys
 ```
 
 ## Usage
 
-### Command Line Interface
+### Basic Extraction
 
-**Basic usage:**
 ```bash
+# Extract a single reel
 python -m src.main --url "https://www.instagram.com/reel/ABC123/"
+
+# With recipe detection
+python -m src.main --url "URL" --recipe
+
+# Save video file
+python -m src.main --url "URL" --keep-video
 ```
 
-**With custom output directory:**
+### Recipe Extraction (v2 Highlight)
+
 ```bash
-python -m src.main --url "https://www.instagram.com/reel/ABC123/" --output ./my_output
+# Extract recipe from cooking reel
+python -m src.main --url "https://www.instagram.com/reel/COOKING/" --recipe
+
+# Output as Markdown recipe
+python -m src.main --url "URL" --format markdown
+
+# Output as JSON-LD (for SEO/web)
+python -m src.main --url "URL" --format json-ld
 ```
 
-**Skip AI analysis (faster):**
+### Batch Processing
+
 ```bash
-python -m src.main --url "https://www.instagram.com/reel/ABC123/" --no-ai
+# Create file with URLs
+echo "https://instagram.com/reel/ABC
+https://instagram.com/reel/DEF
+https://instagram.com/reel/GHI" > urls.txt
+
+# Process all
+python -m src.main --batch urls.txt --output ./results
 ```
 
-**Extract specific number of frames:**
+### Multi-Provider AI
+
 ```bash
-python -m src.main --url "https://www.instagram.com/reel/ABC123/" --frames 10
+# Use specific provider
+python -m src.main --url "URL" --provider anthropic
+
+# Use local model (Ollama)
+python -m src.main --url "URL" --provider ollama
 ```
 
-**Full options:**
+### Advanced Options
+
 ```bash
-python -m src.main --url "https://www.instagram.com/reel/ABC123/" \
-                   --output ./output \
-                   --frames 8 \
-                   --keep-video \
-                   --verbose
+# Skip AI analysis (faster)
+python -m src.main --url "URL" --no-ai
+
+# Disable caching
+python -m src.main --url "URL" --no-cache
+
+# Extract more frames
+python -m src.main --url "URL" --frames 12
+
+# Verbose logging
+python -m src.main --url "URL" --verbose
 ```
 
-### As a Python Module
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file:
+
+```env
+# Required: At least one AI provider API key
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_API_KEY=...
+
+# Optional: Redis for caching
+REDIS_URL=redis://localhost:6379/0
+
+# Optional: Default settings
+OUTPUT_DIR=./output
+LOG_LEVEL=INFO
+DEFAULT_PROVIDER=openai
+CACHE_TTL=86400
+```
+
+### Provider Configuration
+
+Configure providers in `src/config.py`:
 
 ```python
-from src.main import ReelExtractor
-
-# Initialize extractor
-extractor = ReelExtractor(output_dir="./output")
-
-# Extract reel
-result = extractor.extract_reel("https://www.instagram.com/reel/ABC123/")
-
-# Access results
-print(result['metadata']['caption'])
-print(result['analysis']['ai_summary'])
+AI_PROVIDERS = {
+    "openai": ProviderConfig(
+        api_key_env="OPENAI_API_KEY",
+        default_model="gpt-4o",
+        fallback_models=["gpt-4o-mini"],
+        cost_per_1k_tokens=0.01
+    ),
+    "anthropic": ProviderConfig(...),
+    # ... more providers
+}
 ```
 
-## Output Structure
+## Output Format
 
-```
-output/
-├── reel_id/
-│   ├── video.mp4              # Downloaded video (optional)
-│   ├── metadata.json          # Extracted metadata
-│   ├── frames/
-│   │   ├── frame_001.jpg
-│   │   ├── frame_002.jpg
-│   │   └── ...
-│   ├── audio_transcription.txt # Speech-to-text output
-│   └── analysis_report.json   # Complete analysis
-```
-
-## JSON Output Format
+### Standard JSON Output
 
 ```json
 {
   "reel_id": "ABC123",
-  "url": "https://www.instagram.com/reel/ABC123/",
-  "downloaded_at": "2025-01-15T10:30:00",
+  "url": "https://instagram.com/reel/ABC123",
+  "success": true,
   "metadata": {
-    "caption": "Amazing sunset! 🌅",
-    "hashtags": ["#sunset", "#nature", "#photography"],
-    "likes": 1500,
-    "comments": 45,
-    "views": 10000,
+    "caption": "Amazing pasta recipe! 🍝",
+    "hashtags": ["#pasta", "#recipe", "#italian"],
     "author": {
-      "username": "photographer_jane",
-      "full_name": "Jane Doe",
+      "username": "chef_mario",
       "followers": 50000
-    },
-    "audio": {
-      "title": "Original Audio",
-      "artist": "photographer_jane",
-      "trending": false
-    },
-    "duration": 15.5,
-    "upload_date": "2025-01-10"
+    }
   },
   "video_analysis": {
-    "frames_extracted": 8,
-    "frame_paths": [...],
-    "has_audio": true,
-    "audio_transcription": "Check out this amazing sunset...",
-    "scene_changes": 3
+    "scenes_extracted": 8,
+    "has_transcription": true,
+    "transcription": "Today I'm making carbonara..."
+  },
+  "recipe": {
+    "title": "Authentic Italian Carbonara",
+    "cuisine_type": "Italian",
+    "prep_time": "10 minutes",
+    "cook_time": "15 minutes",
+    "servings": 4,
+    "ingredients": [
+      {"name": "spaghetti", "quantity": "400", "unit": "g"},
+      {"name": "eggs", "quantity": "4", "unit": "large"}
+    ],
+    "steps": [
+      {"step_number": 1, "instruction": "Boil water..."}
+    ]
   },
   "ai_analysis": {
-    "summary": "A cinematic reel showcasing a vibrant orange sunset...",
-    "objects_detected": ["sun", "ocean", "clouds", "palm trees"],
-    "activities": ["sunset viewing"],
-    "mood": "peaceful, inspirational",
-    "content_category": "nature/photography",
-    "engagement_prediction": "high",
-    "hashtags_suggestions": ["#goldenhour", "#seascape"]
+    "content_category": "recipe",
+    "viral_potential": 85,
+    "engagement_prediction": "high"
   }
 }
+```
+
+### Recipe Markdown Output
+
+```markdown
+# Authentic Italian Carbonara
+
+**Cuisine:** Italian | **Type:** Pasta
+**Difficulty:** Medium | **Servings:** 4
+**Prep:** 10 minutes | **Cook:** 15 minutes | **Total:** 25 minutes
+
+## Description
+Classic Roman pasta dish made with eggs, cheese, and pancetta...
+
+## Ingredients
+
+- 400 g spaghetti
+- 4 large eggs
+- 100 g pancetta
+- 50 g Pecorino Romano cheese
+
+## Instructions
+
+1. Boil a large pot of salted water...
+2. In a separate bowl, whisk eggs...
+3. Cook pancetta until crispy...
+
+## Tips
+
+- Use room temperature eggs
+- Save pasta water for sauce
+```
+
+## Python API
+
+### Basic Usage
+
+```python
+from src.main_v2 import ReelExtractorV2
+
+# Initialize
+extractor = ReelExtractorV2()
+
+# Extract reel
+result = extractor.extract_reel(
+    url="https://instagram.com/reel/ABC123",
+    extract_recipe=True
+)
+
+# Access recipe
+if result.get("recipe"):
+    print(result["recipe"]["title"])
+    print(result["recipe_markdown"])
+```
+
+### Recipe Extraction
+
+```python
+from src.recipe_extractor import RecipeExtractor
+
+extractor = RecipeExtractor()
+
+recipe = extractor.extract_recipe(
+    video_path="./video.mp4",
+    transcription="Today we're making...",
+    metadata={"caption": "Recipe video"}
+)
+
+if recipe:
+    print(recipe.to_json())
+    print(recipe.format_markdown())
+    print(recipe.to_json_ld())  # For web/SEO
+```
+
+### Batch Processing
+
+```python
+urls = [
+    "https://instagram.com/reel/1",
+    "https://instagram.com/reel/2",
+    "https://instagram.com/reel/3"
+]
+
+results = extractor.batch_extract(urls)
+
+for result in results:
+    if result.get("recipe"):
+        print(f"Found recipe: {result['recipe']['title']}")
+```
+
+### Multi-Provider AI
+
+```python
+from src.ai_providers import AIProviderManager, AIProvider
+
+# Initialize with fallback
+manager = AIProviderManager()
+
+# Set default provider
+manager.set_default_provider(AIProvider.ANTHROPIC)
+
+# Analyze with automatic fallback
+response = manager.analyze_with_fallback(vision_request)
 ```
 
 ## Project Structure
@@ -179,61 +336,105 @@ output/
 instagram-reel-extractor/
 ├── src/
 │   ├── __init__.py
-│   ├── config.py           # Configuration settings
-│   ├── downloader.py       # Reel downloading logic
-│   ├── metadata.py         # Metadata extraction
-│   ├── video_processor.py  # Video processing (frames, audio)
-│   ├── ai_analyzer.py      # AI analysis with OpenAI
-│   └── main.py             # CLI interface
+│   ├── config.py              # Configuration settings
+│   ├── cache.py               # Caching layer (Redis/disk)
+│   ├── downloader.py          # Reel downloading (yt-dlp)
+│   ├── metadata.py            # Metadata extraction
+│   ├── video_processor.py     # Basic video processing
+│   ├── video_processor_v2.py  # Enhanced (scene detection, OCR)
+│   ├── ai_analyzer.py         # Basic AI analysis
+│   ├── ai_providers.py        # Multi-provider AI support
+│   ├── recipe_extractor.py    # Recipe extraction (v2)
+│   ├── main.py                # v1 CLI (legacy)
+│   └── main_v2.py             # v2 CLI with all features
 ├── tests/
-│   └── test_extractor.py
 ├── requirements.txt
 ├── README.md
 └── .env.example
 ```
 
-## Environment Variables
+## Performance
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `OPENAI_API_KEY` | OpenAI API key for AI analysis | Yes |
-| `OUTPUT_DIR` | Default output directory | No (default: ./output) |
-| `LOG_LEVEL` | Logging level (DEBUG, INFO, WARNING) | No (default: INFO) |
+### Optimization Features
+- **Scene Detection**: Extracts key moments, not uniform frames
+- **Smart Caching**: Avoids re-processing identical content
+- **Async Processing**: Parallel frame analysis
+- **Video Compression**: Smaller files for faster AI processing
+- **Provider Fallback**: Switches providers if one fails
 
-## Rate Limits and Ethics
-
-- Respect Instagram's rate limits
-- Use responsibly and ethically
-- Do not use for unauthorized data scraping
-- Comply with Instagram's Terms of Service
+### Benchmarks
+| Operation | Time | Notes |
+|-----------|------|-------|
+| Download (30s reel) | 3-5s | Depends on connection |
+| Scene Extraction | 1-2s | 8 scenes |
+| Audio Transcription | 5-10s | Whisper local |
+| AI Analysis | 3-8s | Depends on provider |
+| Recipe Extraction | 5-15s | Complex recipes take longer |
+| **Total** | **15-30s** | End-to-end with AI |
 
 ## Troubleshooting
 
-**Error: "Video unavailable"**
+### Common Issues
+
+**"Video unavailable"**
 - Ensure the reel is public
-- Check the URL is correct
-- Instagram may have restricted access
+- Instagram may have rate-limited the request
+- Try again after a few minutes
 
-**Error: "OpenAI API key invalid"**
-- Verify your API key is set correctly
-- Check your OpenAI account has available credits
+**"No API key found"**
+- Set at least one provider API key in `.env`
+- Or use local models (Ollama) without API keys
 
-**ffmpeg not found**
-- Ensure ffmpeg is installed and in your PATH
-- Try: `which ffmpeg` (Linux/Mac) or `where ffmpeg` (Windows)
+**"Out of memory"**
+- Reduce `--frames` count
+- Process shorter videos
+- Use disk caching instead of Redis
+
+**Recipe not detected**
+- Not all cooking videos have clear recipes
+- Try with `--verbose` to see detection confidence
+- Some content may be ambiguous
+
+## Rate Limits & Ethics
+
+- Respect Instagram's rate limits
+- Use responsibly and ethically
+- Don't use for unauthorized data scraping
+- Comply with Instagram's Terms of Service
+- Consider creator rights when extracting recipes
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
+2. Create feature branch: `git checkout -b feature-name`
 3. Commit changes: `git commit -am 'Add feature'`
 4. Push to branch: `git push origin feature-name`
 5. Submit a pull request
 
+## Roadmap
+
+### v2.1 (Planned)
+- [ ] Instagram API integration (official)
+- [ ] Real-time processing webhooks
+- [ ] Browser extension
+- [ ] Recipe import to popular apps (Paprika, etc.)
+
+### v3.0 (Planned)
+- [ ] Multi-platform support (TikTok, YouTube Shorts)
+- [ ] AI-powered recipe video generation
+- [ ] Nutritional analysis integration
+- [ ] Community recipe database
+
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see LICENSE file
 
-## Disclaimer
+## Acknowledgments
 
-This tool is for educational and research purposes only. Users are responsible for complying with Instagram's Terms of Service and applicable laws. The authors are not responsible for misuse of this tool.
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) for video downloading
+- [OpenAI Whisper](https://github.com/openai/whisper) for transcription
+- [OpenCV](https://opencv.org/) for video processing
+
+---
+
+**Made with ❤️ for content creators and food enthusiasts**
