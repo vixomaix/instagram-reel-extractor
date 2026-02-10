@@ -611,6 +611,7 @@ class MultiProviderAI:
     
     def __init__(self):
         self._providers: Dict[AIProvider, BaseAIProvider] = {}
+        self._default_provider: Optional[AIProvider] = None
         self._init_providers()
     
     def _init_providers(self):
@@ -630,6 +631,11 @@ class MultiProviderAI:
         """Get a specific provider instance"""
         return self._providers.get(provider_type)
     
+    def set_default_provider(self, provider: AIProvider):
+        """Set the default provider to use first"""
+        self._default_provider = provider
+        logger.info(f"Default provider set to: {provider.value}")
+    
     async def analyze_with_fallback(
         self,
         task_type: TaskType,
@@ -638,6 +644,11 @@ class MultiProviderAI:
     ) -> AIResponse:
         """Analyze with automatic provider fallback"""
         providers = get_providers_for_task(task_type)
+        
+        # Move default provider to front if set and available
+        if self._default_provider and self._default_provider in providers:
+            providers.remove(self._default_provider)
+            providers.insert(0, self._default_provider)
         
         last_error = None
         for provider_type in providers:

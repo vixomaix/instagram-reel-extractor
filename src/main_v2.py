@@ -20,13 +20,14 @@ from typing import Optional, Dict, Any, List, Tuple
 from tqdm import tqdm
 
 from . import config
-from .config import validate_config
+from .config import validate_config, TaskType
 from .downloader import ReelDownloader
 from .metadata import MetadataExtractor
 from .video_processor import VideoProcessor
 from .video_processor_v2 import EnhancedVideoProcessor
 from .ai_analyzer import AIAnalyzer
-from .ai_providers import AIProviderManager, AIProvider
+from .ai_providers import MultiProviderAI
+from .config import AIProvider
 from .cache import CacheManager
 from .recipe_extractor import RecipeExtractor, Recipe
 
@@ -68,7 +69,7 @@ class ReelExtractorV2:
         self.metadata_extractor = MetadataExtractor()
         self.video_processor = VideoProcessor(self.output_dir)
         self.video_processor_v2 = EnhancedVideoProcessor(self.output_dir)
-        self.ai_manager = AIProviderManager()
+        self.ai_manager = MultiProviderAI()
         self.cache = CacheManager() if use_cache else None
         self.recipe_extractor = RecipeExtractor(self.ai_manager)
         
@@ -278,7 +279,7 @@ Provide analysis in JSON format:
             response_format="json"
         )
         
-        response = self.ai_manager.analyze_with_fallback(request)
+        response = asyncio.run(self.ai_manager.analyze_with_fallback(TaskType.SCENE_ANALYSIS, vision_request=request))
         
         if response.success:
             try:

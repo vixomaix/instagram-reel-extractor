@@ -17,7 +17,8 @@ from .metadata import MetadataExtractor
 from .video_processor import VideoProcessor
 from .video_processor_v2 import EnhancedVideoProcessor
 from .ai_analyzer import AIAnalyzer
-from .ai_providers import AIProviderManager, AIProvider, AIResponse
+from .ai_providers import MultiProviderAI, AIResponse
+from .config import AIProvider
 from .cache import CacheManager
 from .recipe_extractor import RecipeExtractor, Recipe, Ingredient, CookingStep
 
@@ -29,7 +30,7 @@ __all__ = [
     "VideoProcessor",
     "EnhancedVideoProcessor",
     "AIAnalyzer",
-    "AIProviderManager",
+    "MultiProviderAI",
     "AIProvider",
     "AIResponse",
     "CacheManager",

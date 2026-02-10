@@ -13,8 +13,8 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, asdict, field
 from datetime import timedelta
 
-from .ai_providers import AIProviderManager, VisionRequest
-from .video_processor_v2 import EnhancedVideoProcessor, Scene
+from .ai_providers import MultiProviderAI, VisionRequest
+from .video_processor_v2 import EnhancedVideoProcessor, SceneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -214,8 +214,8 @@ Respond in JSON format with this structure:
     "confidence_score": 0.0-1.0
 }"""
     
-    def __init__(self, ai_manager: Optional[AIProviderManager] = None):
-        self.ai_manager = ai_manager or AIProviderManager()
+    def __init__(self, ai_manager: Optional[MultiProviderAI] = None):
+        self.ai_manager = ai_manager or MultiProviderAI()
         self.video_processor = EnhancedVideoProcessor()
         
     def is_recipe_content(self, video_path: Path, transcription: str) -> Tuple[bool, float]:
@@ -338,7 +338,7 @@ Respond with JSON:
         data: Dict,
         video_path: Path,
         metadata: Optional[Dict],
-        scenes: List[Scene]
+        scenes: List[SceneInfo]
     ) -> Recipe:
         """Parse recipe JSON into Recipe object"""
         
